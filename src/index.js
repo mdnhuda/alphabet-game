@@ -1,11 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-const title = 'The Alphabet Game';
+import AlphabetGame from './AlphabetGame';
 
 ReactDOM.render(
-  <div>{title}</div>,
-  document.getElementById('app')
+    <AlphabetGame />, document.getElementById('app')
 );
 
 module.hot.accept();
