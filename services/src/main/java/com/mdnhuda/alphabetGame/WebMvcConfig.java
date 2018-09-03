@@ -1,4 +1,4 @@
-package com.tmp;
+package com.mdnhuda.alphabetGame;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
