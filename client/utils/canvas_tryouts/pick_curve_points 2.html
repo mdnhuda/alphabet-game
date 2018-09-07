@@ -3,6 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+        }
+        table {
+            border: none;
+            margin: 0;
+            border-spacing: 0;
+        }
+        table tr td {
+            text-align: center;
+        }
+    </style>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script>
         $(document).ready(function () {
@@ -15,14 +28,16 @@
             const copyCanvas = $("#copy");
             const copyContext = copyCanvas.get(0).getContext("2d");
             clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
+            drawScaleOnCanvas(originalContext);
             drawTextOnCanvas(originalContext, String.fromCharCode(parseInt("099C", 16)));
 
             clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
 
-            $(originalCanvas).mousedown(function (e) {
+            $(originalCanvas).click(function (e) {
                 if (isRecording) {
                     points.push({x: e.pageX, y: e.pageY});
 
+                    originalContext.lineWidth = 3;
                     originalContext.strokeStyle = "#f00";
                     originalContext.lineTo(e.pageX, e.pageY);
                     originalContext.stroke();
@@ -120,12 +135,36 @@
             }
 
             function drawTextOnCanvas(cxt, txt) {
-                originalContext.fillStyle = "#000";
-                originalContext.font = "125px Arial";
-                originalContext.textBaseline = 'middle';
-                originalContext.textAlign = 'center';
-                originalContext.fillText(String.fromCharCode(parseInt("099C", 16)), originalCanvas.width() / 2, originalCanvas.height() / 2);
+                cxt.fillStyle = "#000";
+                cxt.font = "400px Arial";
+                cxt.textBaseline = 'middle';
+                cxt.textAlign = 'center';
+                cxt.fillText(txt, cxt.canvas.clientWidth / 2, cxt.canvas.clientHeight / 2);
                 // http://jrgraphix.net/r/Unicode/0980-09FF
+
+//                [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]]
+            }
+
+            function drawScaleOnCanvas(cxt) {
+                cxt.lineWidth=1;
+                cxt.strokeStyle = "#aaa";
+                const row = cxt.canvas.clientHeight;
+                const col = cxt.canvas.clientWidth;
+                console.log(`scaling ${row}, ${col}`);
+
+                for (let i = 0; i < row; i += 10) {
+                    cxt.moveTo(i, 0);
+                    cxt.lineTo(i, col);
+                    cxt.stroke();
+                }
+
+                for (let i = 0; i < col; i += 10) {
+                    cxt.moveTo(0, i);
+                    cxt.lineTo(row, i);
+                    cxt.stroke();
+                }
+                cxt.beginPath();
+
             }
 
         });
@@ -134,13 +173,31 @@
 
 <body>
 
-<canvas id="original" width="200" height="200"></canvas>
-<canvas id="copy" width="200" height="200"></canvas>
-<button id="clearButton" name="clearButton" value="Clear">Clear</button>
-<button id="printButton" name="printButton" value="printButton">Print</button>
-<button id="startCurve" name="startCurve" value="startCurve">Start Recording a Curve</button>
-<button id="stopCurve" name="stopCurve" value="stopCurve" style="display: none;">Stop Recording</button>
-<button id="cancelCurve" name="cancelCurve" value="cancelCurve" style="display: none;">Cancel Recording</button>
+<table>
+    <tr>
+        <td>
+            <canvas id="original" width="400" height="400"></canvas>
+        </td>
+        <td>
+
+            <button id="printButton" name="printButton" value="printButton">Print</button>
+            <br/>
+            <button id="clearButton" name="clearButton" value="Clear">Clear</button>
+        </td>
+        <td>
+            <canvas id="copy" width="400" height="400"></canvas>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <button id="startCurve" name="startCurve" value="startCurve">Start Recording a Curve</button>
+            <button id="stopCurve" name="stopCurve" value="stopCurve" style="display: none;">Finish Recording</button>
+            <button id="cancelCurve" name="cancelCurve" value="cancelCurve" style="display: none;">Cancel Recording</button>
+        </td>
+    </tr>
+</table>
+
+<br/>
 
 <div id="points">
 
