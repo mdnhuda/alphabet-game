@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script>
+        function createArray(row) {
+            const cells = [[]];
+            for (let i = 0; i < row; i++) {
+                cells[i] = [];
+            }
+            return cells;
+        }
+
+        $(document).ready(function () {
+
+            const canvas = $("#myCanvas");
+            const printButton = $("#printButton");
+            const clearButton = $("#clearButton");
+            const copyButton = $("#copyButton");
+            const cxt = canvas.get(0).getContext("2d");
+            const cellSize = 5;
+            const canvasWidth = canvas.width();
+            const canvasHeight = canvas.height();
+            const col = parseInt(canvasWidth / cellSize);
+            const row = parseInt(canvasHeight / cellSize);
+            const speedAnimate = 50;
+
+            let mousePress = false;
+
+            let cells = createArray(row);
+
+            const animate = function () {
+//                cxt.clearRect(0, 0, canvasWidth, canvasHeight);
+
+                cxt.fillStyle="#eee";
+                cxt.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                cxt.fillStyle="#000";
+                for (let m = 0; m < row; m++) {
+                    for (let n = 0; n < row; n++) {
+                        if (cells[m][n]) {
+                            cxt.fillRect((m * cellSize - 1), (n * cellSize - 1), cellSize * 2, cellSize * 2);
+                        }
+                    }
+                }
+
+                setTimeout(animate, speedAnimate);
+            };
+
+            $(canvas).mousedown(function (e) {
+                mousePress = true;
+            });
+
+            $(canvas).mousemove(function (e) {
+                if (mousePress) {
+                    const x = parseInt(e.pageX / cellSize);
+                    const y = parseInt(e.pageY / cellSize);
+                    if (x <= row && y <= col) {
+                        cells[x][y] = 1;
+                    }
+                }
+            });
+
+            $(canvas).mouseup(function (e) {
+                mousePress = false;
+            });
+
+            animate();
+
+            $(printButton).click(function (e) {
+                const data = [];
+                for (let i = 0; i < row; i++) {
+                    for (let j = 0; j < col; j++) {
+                        if (cells[i][j]) {
+                            data.push(i * row + j);
+                        }
+                    }
+                }
+                console.log({row, col, data});
+            });
+
+            $(clearButton).click(function (e) {
+                cells = createArray(row);
+            });
+
+            $(copyButton).click(function (e) {
+                const copyCanvas = $("#copyCanvas");
+                const copyContext = copyCanvas.get(0).getContext("2d");
+
+                copyContext.fillStyle="#eee";
+                copyContext.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                console.log(cells);
+
+                copyContext.fillStyle="#000";
+                for (let m = 0; m < row; m++) {
+                    for (let n = 0; n < row; n++) {
+                        if (cells[m][n]) {
+                            copyContext.fillRect((m * cellSize - cellSize), (n * cellSize - cellSize), cellSize * 2, cellSize * 2);
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+<canvas id="myCanvas" height="200px" width="200px"></canvas>
+<button id="clearButton" name="clearButton" value="Clear">Clear</button>
+<button id="printButton" name="printButton" value="Print">Print</button>
+<button id="copyButton" name="copyButton" value="Copy">Copy</button>
+
+<br/>
+<canvas id="copyCanvas" height="200px" width="200px"></canvas>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script>
+        $(document).ready(function () {
+            let curves = [];
+            let points = [];
+            let isRecording = false;
+
+            const originalCanvas = $("#original");
+            const originalContext = originalCanvas.get(0).getContext("2d");
+            const copyCanvas = $("#copy");
+            const copyContext = copyCanvas.get(0).getContext("2d");
+            clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
+            drawTextOnCanvas(originalContext, String.fromCharCode(parseInt("099C", 16)));
+
+            clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
+
+            $(originalCanvas).mousedown(function (e) {
+                if (isRecording) {
+                    points.push({x: e.pageX, y: e.pageY});
+
+                    originalContext.strokeStyle = "#f00";
+                    originalContext.lineTo(e.pageX, e.pageY);
+                    originalContext.stroke();
+                    originalContext.moveTo(e.pageX, e.pageY);
+
+                }
+            });
+
+
+            $("#startCurve").click(function (e) {
+                console.log("start recording a curve");
+
+                isRecording = true;
+                points = [];
+
+                $(this).hide();
+                $("#cancelCurve").show();
+                $("#stopCurve").show();
+
+            });
+
+            $("#stopCurve").click(function (e) {
+                console.log("stop recording a curve");
+
+                isRecording = false;
+                curves.push(points);
+
+                $(this).hide();
+                $("#cancelCurve").hide();
+                $("#startCurve").show();
+
+                console.log(points);
+
+                // to stop drawing line on the next curve
+                originalContext.beginPath();
+            });
+
+            $("#cancelCurve").click(function (e) {
+                console.log("cancelled recording");
+
+                isRecording = false;
+                points = [];
+
+                $("#stopCurve").hide();
+                $("#startCurve").show();
+
+                // to stop drawing line on the next curve
+                originalContext.beginPath();
+            });
+
+            $("#clearButton").click(function (e) {
+                curves = [];
+                clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
+                clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
+            });
+
+            $("#printButton").click(function (e) {
+                $("#points").html(JSON.stringify(curves));
+
+                clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
+                copyContext.fillStyle = "#000";
+                copyContext.lineWidth=5;
+                copyContext.strokeStyle="red";
+
+                for (let curveIndex in curves) {
+                    let points = curves[curveIndex];
+                    console.log(points);
+
+                    if (points.length > 1) {
+                        copyContext.beginPath();
+
+                        if(points.length === 2) {
+                            copyContext.moveTo(points[0].x, points[0].y);
+                            copyContext.lineTo(points[1].x, points[1].y);
+                        } else {
+                            copyContext.moveTo(points[0].x, points[0].y);
+                            let i = 1;
+                            for (; i < points.length - 2; i ++) {
+                                const xc = (points[i].x + points[i + 1].x) / 2;
+                                const yc = (points[i].y + points[i + 1].y) / 2;
+                                copyContext.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                            }
+                            copyContext.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
+                        }
+                        copyContext.stroke();
+                    }
+                }
+
+            });
+
+            function clearCanvas(cxt, canvasWidth, canvasHeight) {
+                cxt.clearRect(0, 0, canvasWidth, canvasHeight);
+                cxt.fillStyle = "#eee";
+                cxt.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
+
+            function drawTextOnCanvas(cxt, txt) {
+                originalContext.fillStyle = "#000";
+                originalContext.font = "125px Arial";
+                originalContext.textBaseline = 'middle';
+                originalContext.textAlign = 'center';
+                originalContext.fillText(String.fromCharCode(parseInt("099C", 16)), originalCanvas.width() / 2, originalCanvas.height() / 2);
+                // http://jrgraphix.net/r/Unicode/0980-09FF
+            }
+
+        });
+    </script>
+</head>
+
+<body>
+
+<canvas id="original" width="200" height="200"></canvas>
+<canvas id="copy" width="200" height="200"></canvas>
+<button id="clearButton" name="clearButton" value="Clear">Clear</button>
+<button id="printButton" name="printButton" value="printButton">Print</button>
+<button id="startCurve" name="startCurve" value="startCurve">Start Recording a Curve</button>
+<button id="stopCurve" name="stopCurve" value="stopCurve" style="display: none;">Stop Recording</button>
+<button id="cancelCurve" name="cancelCurve" value="cancelCurve" style="display: none;">Cancel Recording</button>
+
+<div id="points">
+
+</div>
+
+</body>
+
+</html>
