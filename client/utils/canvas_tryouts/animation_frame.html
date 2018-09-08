@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script>
+        const PROXIMITY_DELTA = 10;
+        const curves = [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]];
+
+        /**
+         * based on the current curve/point Index, find the next point
+         * returns -(1, -1) when no next point
+         */
+        function findCurrentPointAndCalculateNext(curveIdx, pointIdx) {
+            const currentCurve = curves[curveIdx];
+            if (pointIdx + 1 === currentCurve.length) {
+                // no next point in the current curve
+
+                if (curveIdx + 1 === curves.length) {
+                    // no next curve
+                    return null;
+                } else {
+                    let nextCurve = curves[curveIdx + 1];
+                    return {currentPoint: nextCurve[0], nextPoint: nextCurve[1],
+                        currentCurveIdx: curveIdx + 1, currentPointIdx: 0,
+                        nextCurveIdx: curveIdx + 1, nextPointIdx: 1};
+                }
+            } else {
+                let nextPointIdx = currentCurve.length > (pointIdx + 1) ? pointIdx + 1 : -1;
+                return {
+                    currentPoint: currentCurve[pointIdx],
+                    nextPoint: nextPointIdx >= 0 ? currentCurve[nextPointIdx] : null,
+                    currentCurveIdx: curveIdx, currentPointIdx: pointIdx,
+                    nextCurveIdx: curveIdx, nextPointIdx: nextPointIdx
+                };
+            }
+        }
+
+        $(document).ready(function() {
+            let mousePress = false;
+            let mouseStart = {};
+            let mouseEnd = {};
+
+            const canvas = $("#myCanvas");
+            const context = canvas.get(0).getContext("2d");
+
+            let gameState = findCurrentPointAndCalculateNext(0, 0);
+            if (!gameState) {
+                console.log("game state is null, quit!");
+                return;
+            }
+
+            var animate = function(canvas,context){
+
+                window.requestAnimationFrame(function() {
+                    //console.log("animating");
+                    animate(canvas, context)
+                });
+
+                clearCanvas(context, canvas.width(), canvas.height());
+
+                let {currentPoint, nextPoint, currentCurveIdx, currentPointIdx}
+                        = gameState || {currentCurveIdx: curves.length - 1, currentPointIdx: curves[curves.length - 1].length - 1};
+
+                context.fillStyle = "#000";
+                context.lineWidth=5;
+                context.strokeStyle="red";
+
+                // draw all curves upto current selection
+                for (let curveIdx = 0; curveIdx < currentCurveIdx; curveIdx++) {
+                    drawCurve(context, curves[curveIdx])
+                }
+
+                //draw current curve partially
+                drawCurve(context, curves[currentCurveIdx].slice(0, currentPointIdx + 1));
+
+                // highlight current position
+                if (currentPoint) {
+                    drawCircle(context, currentPoint, "green");
+                }
+                if (nextPoint) {
+                    drawCircle(context, nextPoint, "red");
+                }
+
+                if (mouseStart && mouseEnd) {
+                    context.lineWidth=3;
+                    context.strokeStyle="blue";
+                    context.beginPath();
+                    context.moveTo(mouseStart.x, mouseStart.y);
+                    context.lineTo(mouseEnd.x, mouseEnd.y);
+                    context.stroke();
+                }
+            };
+
+            animate(canvas, context);
+
+            $(canvas).mousedown(function (e) {
+                let {currentPoint} = gameState || {};
+                if (!currentPoint) {
+                    console.log("current point not defined");
+                    return;
+                }
+                if (Math.abs(e.pageX - currentPoint.x) < PROXIMITY_DELTA
+                        && Math.abs(e.pageY - currentPoint.y) < PROXIMITY_DELTA) {
+                    mousePress = true;
+                    mouseStart = {x: e.pageX, y: e.pageY};
+                    context.moveTo(e.pageX, e.pageY);
+
+                    console.log("current point selected");
+                } else {
+                    console.log("mouse far from current point");
+                }
+            });
+
+            $(canvas).mouseup(function (e) {
+                let {nextPoint, nextCurveIdx, nextPointIdx} = gameState || {};
+                if (!nextPoint) {
+                    console.log("next point not defined");
+                    return;
+                }
+                if (Math.abs(e.pageX - nextPoint.x) < PROXIMITY_DELTA
+                        && Math.abs(e.pageY - nextPoint.y) < PROXIMITY_DELTA) {
+
+                    console.log("next point selected");
+
+                    mousePress = false;
+                    mouseStart = {};
+                    mouseEnd = {};
+
+                    gameState = findCurrentPointAndCalculateNext(nextCurveIdx, nextPointIdx);
+
+                    context.moveTo(e.pageX, e.pageY);
+                } else {
+                    console.log("mouse far from next point");
+                }
+            });
+
+            $(canvas).mousemove(function (e) {
+                if (mousePress) {
+                    mouseEnd = {x: e.pageX, y: e.pageY};
+                }
+            });
+
+
+            function clearCanvas(cxt, canvasWidth, canvasHeight) {
+                cxt.clearRect(0, 0, canvasWidth, canvasHeight);
+                cxt.fillStyle = "#eee";
+                cxt.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
+
+            function drawCircle(cxt, point, color) {
+                //console.log("drawing circle");
+                cxt.beginPath();
+                cxt.arc(point.x, point.y, PROXIMITY_DELTA, 0, 2 * Math.PI, false);
+                cxt.fillStyle = color;
+                cxt.fill();
+                cxt.lineWidth = 2;
+                cxt.strokeStyle = '#003300';
+                cxt.stroke();
+            }
+
+            function drawCurve(cxt, points) {
+                context.fillStyle = "#000";
+                context.lineWidth=5;
+                context.strokeStyle="red";
+
+                context.beginPath();
+
+                if (!points || points.length < 2) {
+                    return;
+                }
+
+                if(points.length === 2) {
+                    context.moveTo(points[0].x, points[0].y);
+                    context.lineTo(points[1].x, points[1].y);
+                } else {
+                    context.moveTo(points[0].x, points[0].y);
+                    let i = 1;
+                    for (; i < points.length - 2; i ++) {
+                        const xc = (points[i].x + points[i + 1].x) / 2;
+                        const yc = (points[i].y + points[i + 1].y) / 2;
+                        context.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                    }
+                    context.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
+                }
+                context.stroke();
+            }
+        });
+    </script>
+</head>
+
+<body>
+<canvas id="myCanvas" width="400" height="400"></canvas>
+</body>
+
+</html>
