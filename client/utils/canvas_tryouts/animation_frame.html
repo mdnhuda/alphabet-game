@@ -12,6 +12,7 @@
     <script>
         const PROXIMITY_DELTA = 10;
         const curves = [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]];
+        let circleAnimatingAngle = 0;
 
         /**
          * based on the current curve/point Index, find the next point
@@ -42,10 +43,70 @@
             }
         }
 
+        function clearCanvas(cxt, canvasWidth, canvasHeight) {
+            cxt.clearRect(0, 0, canvasWidth, canvasHeight);
+            cxt.fillStyle = "#eee";
+            cxt.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+
+        function drawCircle(cxt, point, color, animate) {
+            //console.log("drawing circle");
+
+            let radius = PROXIMITY_DELTA;
+            if (animate) {
+                circleAnimatingAngle += Math.PI / 64;
+                radius += 2 * Math.abs(Math.cos(circleAnimatingAngle));
+            }
+
+            cxt.beginPath();
+            cxt.arc(point.x, point.y, radius, 0, 2 * Math.PI, false);
+            cxt.closePath();
+            cxt.fillStyle = color;
+            cxt.fill();
+            cxt.lineWidth = 2;
+            cxt.strokeStyle = '#003300';
+            cxt.stroke();
+        }
+
+        function drawCurve(cxt, points) {
+            cxt.fillStyle = "#000";
+            cxt.lineWidth=5;
+            cxt.strokeStyle="red";
+
+            cxt.beginPath();
+
+            if (!points || points.length < 2) {
+                return;
+            }
+
+            if(points.length === 2) {
+                cxt.moveTo(points[0].x, points[0].y);
+                cxt.lineTo(points[1].x, points[1].y);
+            } else {
+                cxt.moveTo(points[0].x, points[0].y);
+                let i = 1;
+                for (; i < points.length - 2; i ++) {
+                    const xc = (points[i].x + points[i + 1].x) / 2;
+                    const yc = (points[i].y + points[i + 1].y) / 2;
+                    cxt.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                }
+                cxt.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
+            }
+            cxt.stroke();
+        }
+
+        function drawLine(cxt, start, end, thickness, color) {
+            cxt.lineWidth = thickness;
+            cxt.strokeStyle = color;
+            cxt.beginPath();
+            cxt.moveTo(start.x, start.y);
+            cxt.lineTo(end.x, end.y);
+            cxt.stroke();
+        }
+
         $(document).ready(function() {
             let mouseStart = {};
             let mouseEnd = {};
-            let circleAnimatingAngle = 0;
             let startPointSelected = false;
 
             const canvas = $("#myCanvas");
@@ -139,68 +200,6 @@
                     mouseEnd = {x: e.pageX, y: e.pageY};
                 }
             });
-
-
-            function clearCanvas(cxt, canvasWidth, canvasHeight) {
-                cxt.clearRect(0, 0, canvasWidth, canvasHeight);
-                cxt.fillStyle = "#eee";
-                cxt.fillRect(0, 0, canvasWidth, canvasHeight);
-            }
-
-            function drawCircle(cxt, point, color, animate) {
-                //console.log("drawing circle");
-
-                let radius = PROXIMITY_DELTA;
-                if (animate) {
-                    circleAnimatingAngle += Math.PI / 64;
-                    radius += 2 * Math.abs(Math.cos(circleAnimatingAngle));
-                }
-
-                cxt.beginPath();
-                cxt.arc(point.x, point.y, radius, 0, 2 * Math.PI, false);
-                cxt.closePath();
-                cxt.fillStyle = color;
-                cxt.fill();
-                cxt.lineWidth = 2;
-                cxt.strokeStyle = '#003300';
-                cxt.stroke();
-            }
-
-            function drawCurve(cxt, points) {
-                context.fillStyle = "#000";
-                context.lineWidth=5;
-                context.strokeStyle="red";
-
-                context.beginPath();
-
-                if (!points || points.length < 2) {
-                    return;
-                }
-
-                if(points.length === 2) {
-                    context.moveTo(points[0].x, points[0].y);
-                    context.lineTo(points[1].x, points[1].y);
-                } else {
-                    context.moveTo(points[0].x, points[0].y);
-                    let i = 1;
-                    for (; i < points.length - 2; i ++) {
-                        const xc = (points[i].x + points[i + 1].x) / 2;
-                        const yc = (points[i].y + points[i + 1].y) / 2;
-                        context.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-                    }
-                    context.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
-                }
-                context.stroke();
-            }
-
-            function drawLine(cxt, start, end, thickness, color) {
-                cxt.lineWidth = thickness;
-                cxt.strokeStyle = color;
-                cxt.beginPath();
-                cxt.moveTo(start.x, start.y);
-                cxt.lineTo(end.x, end.y);
-                cxt.stroke();
-            }
         });
     </script>
 </head>
