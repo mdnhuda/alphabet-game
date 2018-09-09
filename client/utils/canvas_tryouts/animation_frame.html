@@ -43,9 +43,10 @@
         }
 
         $(document).ready(function() {
-            let mousePress = false;
             let mouseStart = {};
             let mouseEnd = {};
+            let circleAnimatingAngle = 0;
+            let startPointSelected = false;
 
             const canvas = $("#myCanvas");
             const context = canvas.get(0).getContext("2d");
@@ -68,10 +69,6 @@
                 let {currentPoint, nextPoint, currentCurveIdx, currentPointIdx}
                         = gameState || {currentCurveIdx: curves.length - 1, currentPointIdx: curves[curves.length - 1].length - 1};
 
-                context.fillStyle = "#000";
-                context.lineWidth=5;
-                context.strokeStyle="red";
-
                 // draw all curves upto current selection
                 for (let curveIdx = 0; curveIdx < currentCurveIdx; curveIdx++) {
                     drawCurve(context, curves[curveIdx])
@@ -82,19 +79,14 @@
 
                 // highlight current position
                 if (currentPoint) {
-                    drawCircle(context, currentPoint, "green");
+                    drawCircle(context, currentPoint, "green", !startPointSelected);
                 }
                 if (nextPoint) {
-                    drawCircle(context, nextPoint, "red");
+                    drawCircle(context, nextPoint, "red", startPointSelected);
                 }
 
                 if (mouseStart && mouseEnd) {
-                    context.lineWidth=3;
-                    context.strokeStyle="blue";
-                    context.beginPath();
-                    context.moveTo(mouseStart.x, mouseStart.y);
-                    context.lineTo(mouseEnd.x, mouseEnd.y);
-                    context.stroke();
+                    drawLine(context, mouseStart, mouseEnd, 3, "blue");
                 }
             };
 
@@ -108,7 +100,7 @@
                 }
                 if (Math.abs(e.pageX - currentPoint.x) < PROXIMITY_DELTA
                         && Math.abs(e.pageY - currentPoint.y) < PROXIMITY_DELTA) {
-                    mousePress = true;
+                    startPointSelected = true;
                     mouseStart = {x: e.pageX, y: e.pageY};
                     context.moveTo(e.pageX, e.pageY);
 
@@ -124,12 +116,13 @@
                     console.log("next point not defined");
                     return;
                 }
-                if (Math.abs(e.pageX - nextPoint.x) < PROXIMITY_DELTA
+                if (startPointSelected && Math.abs(e.pageX - nextPoint.x) < PROXIMITY_DELTA
                         && Math.abs(e.pageY - nextPoint.y) < PROXIMITY_DELTA) {
 
                     console.log("next point selected");
 
-                    mousePress = false;
+                    startPointSelected = false;
+
                     mouseStart = {};
                     mouseEnd = {};
 
@@ -142,7 +135,7 @@
             });
 
             $(canvas).mousemove(function (e) {
-                if (mousePress) {
+                if (startPointSelected) {
                     mouseEnd = {x: e.pageX, y: e.pageY};
                 }
             });
@@ -154,10 +147,18 @@
                 cxt.fillRect(0, 0, canvasWidth, canvasHeight);
             }
 
-            function drawCircle(cxt, point, color) {
+            function drawCircle(cxt, point, color, animate) {
                 //console.log("drawing circle");
+
+                let radius = PROXIMITY_DELTA;
+                if (animate) {
+                    circleAnimatingAngle += Math.PI / 64;
+                    radius += 2 * Math.abs(Math.cos(circleAnimatingAngle));
+                }
+
                 cxt.beginPath();
-                cxt.arc(point.x, point.y, PROXIMITY_DELTA, 0, 2 * Math.PI, false);
+                cxt.arc(point.x, point.y, radius, 0, 2 * Math.PI, false);
+                cxt.closePath();
                 cxt.fillStyle = color;
                 cxt.fill();
                 cxt.lineWidth = 2;
@@ -190,6 +191,15 @@
                     context.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
                 }
                 context.stroke();
+            }
+
+            function drawLine(cxt, start, end, thickness, color) {
+                cxt.lineWidth = thickness;
+                cxt.strokeStyle = color;
+                cxt.beginPath();
+                cxt.moveTo(start.x, start.y);
+                cxt.lineTo(end.x, end.y);
+                cxt.stroke();
             }
         });
     </script>
