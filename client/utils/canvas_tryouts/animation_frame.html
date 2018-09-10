@@ -11,7 +11,11 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script>
         const PROXIMITY_DELTA = 10;
-        const curves = [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]];
+        // Ja
+        // const curves = [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]];
+
+        // Ha
+        const curves = [[{"x":52,"y":60},{"x":230,"y":58}],[{"x":85,"y":90},{"x":118,"y":96},{"x":128,"y":119},{"x":110,"y":142},{"x":83,"y":137},{"x":72,"y":111},{"x":107,"y":71},{"x":155,"y":72},{"x":187,"y":108},{"x":189,"y":145},{"x":167,"y":178},{"x":128,"y":192},{"x":80,"y":189}],[{"x":82,"y":192},{"x":225,"y":271}]];
         let circleAnimatingAngle = 0;
 
         /**
@@ -171,33 +175,36 @@
                 }
             });
 
-            $(canvas).mouseup(function (e) {
-                let {nextPoint, nextCurveIdx, nextPointIdx} = gameState || {};
-                if (!nextPoint) {
-                    console.log("next point not defined");
-                    return;
-                }
-                if (startPointSelected && Math.abs(e.pageX - nextPoint.x) < PROXIMITY_DELTA
-                        && Math.abs(e.pageY - nextPoint.y) < PROXIMITY_DELTA) {
-
-                    console.log("next point selected");
-
-                    startPointSelected = false;
-
-                    mouseStart = {};
-                    mouseEnd = {};
-
-                    gameState = findCurrentPointAndCalculateNext(nextCurveIdx, nextPointIdx);
-
-                    context.moveTo(e.pageX, e.pageY);
-                } else {
-                    console.log("mouse far from next point");
-                }
-            });
-
             $(canvas).mousemove(function (e) {
+                let {nextPoint, nextCurveIdx, nextPointIdx} = gameState || {};
                 if (startPointSelected) {
                     mouseEnd = {x: e.pageX, y: e.pageY};
+
+                    if (Math.abs(e.pageX - nextPoint.x) < PROXIMITY_DELTA
+                            && Math.abs(e.pageY - nextPoint.y) < PROXIMITY_DELTA) {
+
+                        console.log("mouse on next point");
+
+                        let newGameState = findCurrentPointAndCalculateNext(nextCurveIdx, nextPointIdx);
+
+                        // means the game has ended
+                        if (!newGameState) {
+                            startPointSelected = false;
+                            mouseStart = {};
+                        } else {
+                            // if next point is on a new curve
+                            if (newGameState.nextCurveIdx > gameState.currentCurveIdx) {
+                                startPointSelected = false;
+                                mouseStart = {};
+                            } else {
+                                startPointSelected = true;
+                                mouseStart = {x: e.pageX, y: e.pageY};
+                            }
+                        }
+                        mouseEnd = {};
+                        gameState = newGameState;
+                        context.moveTo(e.pageX, e.pageY);
+                    }
                 }
             });
         });
