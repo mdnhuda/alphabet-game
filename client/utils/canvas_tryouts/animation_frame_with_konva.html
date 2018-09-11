@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.rawgit.com/konvajs/konva/2.3.0/konva.min.js"></script>
+    <meta charset="utf-8">
+    <title>Drawing Alphabet</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #F0F0F0;
+        }
+    </style>
+</head>
+
+<body>
+<div style="margin: 100px 0 0 100px">
+    <div id="container"></div>
+</div>
+<script>
+    const PROXIMITY_DELTA = 10;
+    let circleAnimatingAngle = 0;
+
+    /**
+     * based on the current curve/point Index, find the next point
+     * returns -(1, -1) when no next point
+     */
+    function findCurrentPointAndCalculateNext(curves, curveIdx, pointIdx) {
+        const currentCurve = curves[curveIdx];
+        if (pointIdx + 1 === currentCurve.length) {
+            // no next point in the current curve
+
+            if (curveIdx + 1 === curves.length) {
+                // no next curve
+                return null;
+            } else {
+                let nextCurve = curves[curveIdx + 1];
+                return {currentPoint: nextCurve[0], nextPoint: nextCurve[1],
+                    currentCurveIdx: curveIdx + 1, currentPointIdx: 0,
+                    nextCurveIdx: curveIdx + 1, nextPointIdx: 1};
+            }
+        } else {
+            let nextPointIdx = currentCurve.length > (pointIdx + 1) ? pointIdx + 1 : -1;
+            return {
+                currentPoint: currentCurve[pointIdx],
+                nextPoint: nextPointIdx >= 0 ? currentCurve[nextPointIdx] : null,
+                currentCurveIdx: curveIdx, currentPointIdx: pointIdx,
+                nextCurveIdx: curveIdx, nextPointIdx: nextPointIdx
+            };
+        }
+    }
+
+    function clearCanvas(cxt, canvasWidth, canvasHeight) {
+        cxt.clearRect(0, 0, canvasWidth, canvasHeight);
+        cxt.fillStyle = "#eee";
+        cxt.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
+
+    function drawCircle(cxt, center, radius, color, animate) {
+        if (animate) {
+            circleAnimatingAngle += Math.PI / 64;
+            radius += 2 * Math.abs(Math.cos(circleAnimatingAngle));
+        }
+
+        cxt.beginPath();
+        cxt.arc(center.x, center.y, radius, 0, 2 * Math.PI, false);
+        cxt.closePath();
+        cxt.fillStyle = color;
+        cxt.fill();
+        cxt.lineWidth = 2;
+        cxt.strokeStyle = '#003300';
+        cxt.stroke();
+    }
+
+    function drawCurve(cxt, points) {
+        cxt.fillStyle = "#000";
+        cxt.lineWidth=5;
+        cxt.strokeStyle="red";
+
+        cxt.beginPath();
+
+        if (!points || points.length < 2) {
+            return;
+        }
+
+        if(points.length === 2) {
+            cxt.moveTo(points[0].x, points[0].y);
+            cxt.lineTo(points[1].x, points[1].y);
+        } else {
+            cxt.moveTo(points[0].x, points[0].y);
+            let i = 1;
+            for (; i < points.length - 2; i ++) {
+                const xc = (points[i].x + points[i + 1].x) / 2;
+                const yc = (points[i].y + points[i + 1].y) / 2;
+                cxt.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            cxt.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
+        }
+        cxt.stroke();
+    }
+
+    function drawLine(cxt, start, end, thickness, color) {
+        cxt.lineWidth = thickness;
+        cxt.strokeStyle = color;
+        cxt.beginPath();
+        cxt.moveTo(start.x, start.y);
+        cxt.lineTo(end.x, end.y);
+        cxt.stroke();
+    }
+
+    var width = 200;
+    var height = 200;
+    // first we need Konva core things: stage and layer
+    var stage = new Konva.Stage({
+        container: 'container',
+        width: width,
+        height: height
+    });
+
+    var layer = new Konva.Layer();
+    stage.add(layer);
+
+    // then we are going to draw into special canvas element
+    var canvas = document.createElement('canvas');
+    canvas.width = stage.width();
+    canvas.height = stage.height();
+
+    // created canvas we can add to layer as "Konva.Image" element
+    var image = new Konva.Image({
+        image: canvas,
+        x: 0,
+        y: 0,
+        stroke: 'green',
+        shadowBlur: 5
+    });
+    layer.add(image);
+    stage.draw();
+
+    // Good. Now we need to get access to context element
+    var context = canvas.getContext('2d');
+
+    const origWidth = 300, origHeight = 300;
+    const scalePoint = function (p) { return {x: p.x * canvas.width / origWidth, y: p.y * canvas.height / origHeight} };
+    const origCurves = [[{"x":52,"y":60},{"x":230,"y":58}],[{"x":85,"y":90},{"x":118,"y":96},{"x":128,"y":119},{"x":110,"y":142},{"x":83,"y":137},{"x":72,"y":111},{"x":107,"y":71},{"x":155,"y":72},{"x":187,"y":108},{"x":189,"y":145},{"x":167,"y":178},{"x":128,"y":192},{"x":80,"y":189}],[{"x":82,"y":192},{"x":225,"y":271}]];
+    const curves = origCurves.map(function (arr) { return arr.map(function (point) { return scalePoint(point) }) });
+    console.log(origCurves);
+    console.log(curves);
+
+    let gameState = findCurrentPointAndCalculateNext(curves, 0, 0);
+    if (!gameState) {
+        console.log("game state is null");
+    }
+
+    let {currentPoint, nextPoint, currentCurveIdx, currentPointIdx}
+            = gameState || {currentCurveIdx: curves.length - 1, currentPointIdx: curves[curves.length - 1].length - 1};
+
+    let mouseStart = {};
+    let mouseEnd = {};
+    let startPointSelected = false;
+
+    var anim = new Konva.Animation(function(frame) {
+        clearCanvas(context, canvas.width, canvas.height);
+
+        let {currentPoint, nextPoint, currentCurveIdx, currentPointIdx}
+                = gameState || {currentCurveIdx: curves.length - 1, currentPointIdx: curves[curves.length - 1].length - 1};
+
+        // draw all curves upto current selection
+        for (let curveIdx = 0; curveIdx < currentCurveIdx; curveIdx++) {
+            drawCurve(context, curves[curveIdx])
+        }
+
+        //draw current curve partially
+        drawCurve(context, curves[currentCurveIdx].slice(0, currentPointIdx + 1));
+
+        // highlight current position
+        if (currentPoint) {
+            drawCircle(context, currentPoint, PROXIMITY_DELTA, "green", !startPointSelected);
+        }
+        if (nextPoint) {
+            drawCircle(context, nextPoint, PROXIMITY_DELTA, "red", startPointSelected);
+        }
+
+        if (mouseStart && mouseEnd) {
+            drawLine(context, mouseStart, mouseEnd, 3, "blue");
+        }
+
+        if (!gameState) {
+            // reached the end of the game, stopping animation
+            console.log("reached the end of the game, stopping animation");
+            this.stop();
+        }
+    }, layer);
+
+    anim.start();
+
+    image.on('mousedown touchstart', function () {
+        let {currentPoint} = gameState || {};
+        if (!currentPoint) {
+            console.log("current point not defined");
+            return;
+        }
+        let pos = stage.getPointerPosition();
+        let localPos = {
+            x: pos.x - image.x(),
+            y: pos.y - image.y()
+        };
+        if (Math.abs(localPos.x - currentPoint.x) < PROXIMITY_DELTA
+                && Math.abs(localPos.y - currentPoint.y) < PROXIMITY_DELTA) {
+            startPointSelected = true;
+            mouseStart = localPos;
+            context.moveTo(localPos.x, localPos.y);
+
+            console.log("current point selected");
+        } else {
+            console.log(`mouse far from current point, curr=(${currentPoint.x}, ${currentPoint.y}), local=(${localPos.x}, ${localPos.y})`);
+        }
+
+    });
+
+    stage.addEventListener('mouseup touchend', function () {
+        startPointSelected = false;
+        mouseStart = {};
+        mouseEnd = {};
+    });
+
+    stage.addEventListener('mousemove touchmove', function () {
+        if (!startPointSelected) {
+            return;
+        }
+        let {nextPoint, nextCurveIdx, nextPointIdx} = gameState || {};
+        let pos = stage.getPointerPosition();
+        let localPos = {
+            x: pos.x - image.x(),
+            y: pos.y - image.y()
+        };
+
+        mouseEnd = localPos;
+
+        if (Math.abs(localPos.x- nextPoint.x) < PROXIMITY_DELTA
+                && Math.abs(localPos.y - nextPoint.y) < PROXIMITY_DELTA) {
+
+            console.log("mouse on next point");
+
+            let newGameState = findCurrentPointAndCalculateNext(curves, nextCurveIdx, nextPointIdx);
+
+            // means the game has ended
+            if (!newGameState) {
+                startPointSelected = false;
+                mouseStart = {};
+            } else {
+                // if next point is on a new curve
+                if (newGameState.nextCurveIdx > gameState.currentCurveIdx) {
+                    startPointSelected = false;
+                    mouseStart = {};
+                } else {
+                    startPointSelected = true;
+                    mouseStart = localPos;
+                }
+            }
+            mouseEnd = {};
+            gameState = newGameState;
+            context.moveTo(localPos.x, localPos.y);
+        }
+    });
+
+</script>
+
+</body>
+
+</html>
