@@ -12,15 +12,22 @@
             overflow: hidden;
             background-color: #F0F0F0;
         }
+        #stage-parent {
+            width: 100%;
+        }
     </style>
 </head>
 
 <body>
-<div style="margin: 10px 0 0 10px">
+<div id="stage-parent">
     <div id="container"></div>
 </div>
 <script>
-    const PROXIMITY_DELTA = 10;
+    var width = 600;
+    var height = 600;
+
+    const PROXIMITY_DELTA = width / 25;
+    const LINE_STROKE = width / 50;
     let circleAnimatingAngle = 0;
 
     function calculateNextState(curves, currentState) {
@@ -84,7 +91,7 @@
         return new Konva.Line({
             points: flattenedPoints,
             stroke: 'red',
-            strokeWidth: 5,
+            strokeWidth: LINE_STROKE,
             lineCap: 'round',
             lineJoin: 'round',
             tension : 0.7
@@ -95,7 +102,7 @@
         return new Konva.Line({
             points: [start.x, start.y, end.x, end.y],
             stroke: 'blue',
-            strokeWidth: 2,
+            strokeWidth: LINE_STROKE,
             lineCap: 'round',
             lineJoin: 'round'
         });
@@ -108,12 +115,10 @@
             radius: PROXIMITY_DELTA,
             fill: fill,
             stroke: 'black',
-            strokeWidth: 4
+            strokeWidth: LINE_STROKE
         });
     }
 
-    var width = 200;
-    var height = 200;
     const origWidth = 300, origHeight = 300;
     const origCurves = [[{"x":52,"y":60},{"x":230,"y":58}],[{"x":85,"y":90},{"x":118,"y":96},{"x":128,"y":119},{"x":110,"y":142},{"x":83,"y":137},{"x":72,"y":111},{"x":107,"y":71},{"x":155,"y":72},{"x":187,"y":108},{"x":189,"y":145},{"x":167,"y":178},{"x":128,"y":192},{"x":80,"y":189}],[{"x":82,"y":192},{"x":225,"y":271}]];
     const curves = scaleCoOrdinates(origCurves, {x: width / origWidth, y: height / origHeight});
@@ -137,36 +142,74 @@
     let lineEnd = null;
 
     stage.add(layer);
-    redraw();
+
+    let currentCircle = createCircle(curves[gameState.currentCurveIdx][gameState.currentPointIdx], "green");
+    let nextCircle = createCircle(curves[gameState.nextCurveIdx][gameState.nextPointIdx], "red");
+
+    layer.add(currentCircle);
+    layer.add(nextCircle);
+
+    var anim = new Konva.Animation(function(frame) {
+        let radius = PROXIMITY_DELTA;
+        circleAnimatingAngle += Math.PI / 32;
+        let animatedRadius = PROXIMITY_DELTA + 10 * Math.abs(Math.cos(circleAnimatingAngle));
+
+        let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
+        let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
+
+        if (!lineStart) {
+            currentCircle.setRadius(animatedRadius);
+            nextCircle.setRadius(radius);
+        } else {
+            currentCircle.setRadius(radius);
+            nextCircle.setRadius(animatedRadius);
+        }
+
+        currentCircle.setX(startPoint.x);
+        currentCircle.setY(startPoint.y);
+        nextCircle.setX(nextPoint.x);
+        nextCircle.setY(nextPoint.y);
+
+        let allLayerObjects = createAllLayerObjects(curves, gameState);
+
+        layer.destroyChildren();
+        allLayerObjects.forEach(function (obj) { layer.add(obj); });
+
+        if (startPoint != nextPoint) {
+            currentCircle && layer.add(currentCircle);
+            nextCircle && layer.add(nextCircle);
+        }
+        if (lineStart && lineEnd) {
+            layer.add(createLine(lineStart, lineEnd));
+        }
+        stage.draw();
+
+    }, layer);
 
     stage.addEventListener('mouseup touchend', function () {
         let pos = stage.getPointerPosition();
-        let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
-        let endPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
+        let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
-        if (lineStart && Math.abs(pos.x - endPoint.x) < PROXIMITY_DELTA && Math.abs(pos.y - endPoint.y) < PROXIMITY_DELTA) {
-            console.log("mouseup at endpoint");
+        if (lineStart && Math.abs(pos.x - nextPoint.x) < PROXIMITY_DELTA && Math.abs(pos.y - nextPoint.y) < PROXIMITY_DELTA) {
             gameState = calculateNextState(curves, gameState);
-            redraw();
-        } else {
-            console.log("mouseup NOT at endpoint");
         }
         lineStart = null;
+        lineEnd = null;
     });
 
-    stage.addEventListener('mousemove dragmove', function () {
+    anim.start();
+
+    stage.addEventListener('mousemove touchmove', function () {
         let pos = stage.getPointerPosition();
-        let endPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
+        let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
         if (lineStart) {
-            if (Math.abs(pos.x - endPoint.x) < PROXIMITY_DELTA && Math.abs(pos.y - endPoint.y) < PROXIMITY_DELTA) {
+            if (Math.abs(pos.x - nextPoint.x) < PROXIMITY_DELTA && Math.abs(pos.y - nextPoint.y) < PROXIMITY_DELTA) {
                 gameState = calculateNextState(curves, gameState);
                 lineStart = pos;
                 lineEnd = null;
-                redraw();
             } else {
                 lineEnd = pos;
-                redraw();
             }
         }
     });
@@ -174,54 +217,24 @@
     stage.addEventListener('mousedown touchstart', function () {
         let pos = stage.getPointerPosition();
         let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
-        let endPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
-        console.log(`mousedown pos=(${pos.x}, ${pos.y}), start=(${startPoint.x}, ${startPoint.y}), end=(${endPoint.x}, ${endPoint.y})`);
+        let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
         if (!lineStart) {
             if (Math.abs(pos.x - startPoint.x) < PROXIMITY_DELTA
                     && Math.abs(pos.y - startPoint.y) < PROXIMITY_DELTA) {
-
-                console.log("start point selected");
                 lineStart = pos;
             } else {
-                console.log("start point outside");
                 lineStart = null;
             }
         } else {
-            if (Math.abs(pos.x - endPoint.x) < PROXIMITY_DELTA
-                    && Math.abs(pos.y - endPoint.y) < PROXIMITY_DELTA) {
-
-                console.log("end point selected");
-
+            if (Math.abs(pos.x - nextPoint.x) < PROXIMITY_DELTA
+                    && Math.abs(pos.y - nextPoint.y) < PROXIMITY_DELTA) {
                 gameState = calculateNextState(curves, gameState);
-                redraw();
             } else {
                 lineStart = null;
-                console.log("end point outside");
             }
         }
     });
-
-    function redraw() {
-        let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
-        let endPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
-
-        let allLayerObjects = createAllLayerObjects(curves, gameState);
-        let currentCircle = createCircle(curves[gameState.currentCurveIdx][gameState.currentPointIdx], "green");
-        let nextCircle = createCircle(curves[gameState.nextCurveIdx][gameState.nextPointIdx], "red");
-
-        layer.destroyChildren();
-        allLayerObjects.forEach(function (obj) { layer.add(obj); });
-        if (startPoint != endPoint) {
-            layer.add(currentCircle);
-            layer.add(nextCircle);
-        }
-        if (lineStart && lineEnd) {
-            layer.add(createLine(lineStart, lineEnd));
-        }
-        stage.draw();
-    }
-
 </script>
 
 </body>
