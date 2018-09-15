@@ -27,11 +27,6 @@
             const originalContext = originalCanvas.get(0).getContext("2d");
             const copyCanvas = $("#copy");
             const copyContext = copyCanvas.get(0).getContext("2d");
-            clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
-            drawScaleOnCanvas(originalContext);
-            drawTextOnCanvas(originalContext, String.fromCharCode(parseInt("099C", 16)));
-
-            clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
 
             $(originalCanvas).click(function (e) {
                 if (isRecording) {
@@ -46,6 +41,21 @@
                 }
             });
 
+            const clearAndReDraw = function () {
+                clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
+                drawScaleOnCanvas(originalContext);
+                drawTextOnCanvas(originalContext, $("#inputText").val());
+//            drawTextOnCanvas(originalContext, String.fromCharCode(parseInt("099C", 16)));
+
+                clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
+
+                $("#startCurve").show();
+                $("#stopCurve").hide();
+                $("#cancelCurve").hide();
+                $("#points").html("");
+            };
+
+            clearAndReDraw();
 
             $("#startCurve").click(function (e) {
                 console.log("start recording a curve");
@@ -90,8 +100,7 @@
 
             $("#clearButton").click(function (e) {
                 curves = [];
-                clearCanvas(originalContext, originalCanvas.width(), originalCanvas.height());
-                clearCanvas(copyContext, copyCanvas.width(), copyCanvas.height());
+                clearAndReDraw();
             });
 
             $("#printButton").click(function (e) {
@@ -180,9 +189,11 @@
         </td>
         <td>
 
+            <input type="text" id="inputText" value="A" maxlength="5" width="10px"/>
+            <br/>
             <button id="printButton" name="printButton" value="printButton">Print</button>
             <br/>
-            <button id="clearButton" name="clearButton" value="Clear">Clear</button>
+            <button id="clearButton" name="clearButton" value="Clear">Reset</button>
         </td>
         <td>
             <canvas id="copy" width="400" height="400"></canvas>

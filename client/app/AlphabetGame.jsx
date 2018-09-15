@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import AlphabetCursive from './AlphabetCursive';
 import Button from './VirtualButton';
 import SampleData from './SampleData';
 
@@ -47,9 +48,9 @@ class AlphabetGame extends React.Component {
         let buttonSection;
         if (isShowResult && isCorrect) {
             buttonSection = <div>
-                {alphabet.cursive && <img style={alphabetStyle} src={alphabet.cursive} alt={alphabet.label}/>};
+                {alphabet.cursive && <AlphabetCursive origCurves={alphabet.cursive} origHeight={400} origWidth={400} />}
 
-                <div class="next">
+                <div className="next">
                     <Button name="nextAlphabet" value="Next" clickHandler={this.loadNextAlphabet} />
                 </div>
             </div>;

@@ -7,6 +7,8 @@ const PATHS = {
 };
 
 module.exports = {
+  mode: 'development',
+
   entry: './app/index.js',
 
   module: {
