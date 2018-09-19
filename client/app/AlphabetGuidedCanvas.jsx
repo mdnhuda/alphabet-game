@@ -1,74 +1,8 @@
 import React from 'react';
+import {initialGameState, calculateNextState, scaleCurvesCoOrdinates, isCloseProximity, flattenCurve} from "./AlphabetUtils";
 import {Stage, Layer, Line, Circle} from 'react-konva';
 
 class AlphabetGuidedCanvas extends React.Component {
-    static calculateNextState(curves, currentState) {
-        if (curves[currentState.currentCurveIdx].length > currentState.nextPointIdx + 1) {
-            console.log("moving to the next point");
-            return {
-                currentCurveIdx: currentState.currentCurveIdx,
-                currentPointIdx: currentState.nextPointIdx,
-                nextCurveIdx: currentState.currentCurveIdx,
-                nextPointIdx: currentState.nextPointIdx + 1
-            }
-        } else if (curves.length > currentState.currentCurveIdx + 1) {
-            console.log("jumping to the next curve");
-            return {
-                currentCurveIdx: currentState.currentCurveIdx + 1,
-                currentPointIdx: 0,
-                nextCurveIdx: currentState.currentCurveIdx + 1,
-                nextPointIdx: 1
-            }
-        } else {
-            console.log("end of the drawing");
-            return {
-                currentCurveIdx: curves.length - 1,
-                currentPointIdx: curves[curves.length - 1].length - 1,
-                nextCurveIdx: curves.length - 1,
-                nextPointIdx: curves[curves.length - 1].length - 1
-            };
-        }
-    }
-
-    static scaleCoOrdinates(origCurves, scale) {
-        const curves = [];
-        origCurves.forEach(function (arrPoints) {
-            const curve = [];
-            arrPoints.forEach(function (p) {
-                curve.push({x: p.x * scale.x, y: p.y * scale.y});
-            });
-            curves.push(curve);
-        });
-        return curves;
-    }
-
-    static createCurve(curve, strokeWidth) {
-        let flattenedPoints = [];
-        curve.forEach(function (p) {
-            flattenedPoints.push(p.x);
-            flattenedPoints.push(p.y);
-        });
-        return <Line
-            points={flattenedPoints}
-            stroke='red'
-            strokeWidth={strokeWidth}
-            lineCap='round'
-            lineJoin='round'
-            tension={0.7}
-        />
-    }
-
-    static createLine(start, end, strokeWidth) {
-        return <Line
-            points={[start.x, start.y, end.x, end.y]}
-            stroke='red'
-            strokeWidth={strokeWidth}
-            lineCap='round'
-            lineJoin='round'
-            tension={0.7}
-        />
-    }
-
     constructor(props) {
         super(props);
 
@@ -76,26 +10,15 @@ class AlphabetGuidedCanvas extends React.Component {
         const stageWidth = 400;
         const stageHeight = 400;
 
-        const curves = AlphabetGuidedCanvas.scaleCoOrdinates( origCurves, {x: stageWidth / origWidth, y: stageHeight / origHeight});
-
-        let gameState = {
-            currentCurveIdx: 0,
-            currentPointIdx: 0,
-            nextCurveIdx: 0,
-            nextPointIdx: 1
-        };
-        let lineStart = null;
-        let lineEnd = null;
-
         this.state = {
-            curves: curves,
-            gameState: gameState,
+            curves: scaleCurvesCoOrdinates( origCurves, {x: stageWidth / origWidth, y: stageHeight / origHeight}),
+            gameState: initialGameState(),
             height: stageHeight,
             width: stageWidth,
             strokeWidth: stageWidth / 50,
             proximityDelta: stageWidth / 25,
-            lineStart: lineStart,
-            lineEnd: lineEnd
+            lineStart: null,
+            lineEnd: null
         };
     }
 
@@ -112,15 +35,13 @@ class AlphabetGuidedCanvas extends React.Component {
 
         if (!lineStart) {
             // start point not selected yet; check if mouse is near start point
-            if (Math.abs(pos.x - startPoint.x) < proximityDelta
-                && Math.abs(pos.y - startPoint.y) < proximityDelta) {
+            if (isCloseProximity(pos, startPoint, proximityDelta)) {
                 // mark start point selected
                 this.setState({lineStart: pos});
             }
         } else {
-            if (Math.abs(pos.x - nextPoint.x) < proximityDelta
-                && Math.abs(pos.y - nextPoint.y) < proximityDelta) {
-                const newGameState = AlphabetGuidedCanvas.calculateNextState(curves, gameState);
+            if (isCloseProximity(pos, nextPoint, proximityDelta)) {
+                const newGameState = calculateNextState(curves, gameState);
                 this.setState({gameState: newGameState});
             } else {
                 this.setState({lineStart: null});
@@ -141,9 +62,9 @@ class AlphabetGuidedCanvas extends React.Component {
         let newGameState = gameState;
 
         // start-point already selected and checking if mouse was up on end-point
-        if (lineStart && Math.abs(pos.x - nextPoint.x) < proximityDelta && Math.abs(pos.y - nextPoint.y) < proximityDelta) {
+        if (lineStart && isCloseProximity(pos, nextPoint, proximityDelta)) {
             console.log("getting new state");
-            newGameState = AlphabetGuidedCanvas.calculateNextState(curves, gameState);
+            newGameState = calculateNextState(curves, gameState);
         }
         this.setState({gameState: newGameState, lineStart: null, lineEnd: null});
         this.animateStartEnd();
@@ -157,9 +78,9 @@ class AlphabetGuidedCanvas extends React.Component {
         let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
         if (lineStart) {
-            if (Math.abs(pos.x - nextPoint.x) < proximityDelta && Math.abs(pos.y - nextPoint.y) < proximityDelta) {
-                const newGameState = AlphabetGuidedCanvas.calculateNextState(curves, gameState);
-                this.setState({gameState: newGameState, lineStart: pos, lineEnd: null});
+            if (isCloseProximity(pos, nextPoint, proximityDelta)) {
+                const newGameState = calculateNextState(curves, gameState);
+                this.setState({gameState: newGameState, lineStart: nextPoint, lineEnd: null});
             } else {
                 this.setState({lineEnd: pos});
             }
@@ -191,50 +112,20 @@ class AlphabetGuidedCanvas extends React.Component {
 
     render() {
         const {curves, gameState, height, width, strokeWidth, proximityDelta, lineStart, lineEnd} = this.state;
-
         let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
         let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
-        let currentCircle = <Circle
-            ref={ node => {
-                this.currentCircle = node;
-            }}
-            x={startPoint.x}
-            y={startPoint.y}
-            radius={proximityDelta}
-            fill="green"
-            stroke={'black'}
-            strokeWidth={strokeWidth}
-        />;
-
-        let nextCircle = <Circle
-            ref={ node => {
-                this.nextCircle = node;
-            }}
-            x={nextPoint.x}
-            y={nextPoint.y}
-            radius={proximityDelta}
-            fill="red"
-            stroke={'black'}
-            strokeWidth={strokeWidth}
-        />;
-
-        const layerObjects = [];
-        for (let curveIdx = 0; curveIdx < gameState.currentCurveIdx; curveIdx++) {
-            layerObjects.push(AlphabetGuidedCanvas.createCurve(curves[curveIdx], strokeWidth));
-        }
-        //draw current curve partially
-        layerObjects.push(AlphabetGuidedCanvas.createCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1), strokeWidth));
-
-        if (startPoint != nextPoint) {
-            layerObjects.push(currentCircle);
-            layerObjects.push(nextCircle);
-        }
-        if (lineStart && lineEnd) {
-            layerObjects.push(AlphabetGuidedCanvas.createLine(lineStart, lineEnd));
-        }
-
-        console.log(layerObjects);
+        const createCurve = (curve, idx) => {
+            return <Line
+                key={idx}
+                points={flattenCurve(curve)}
+                stroke='red'
+                strokeWidth={strokeWidth}
+                lineCap='round'
+                lineJoin='round'
+                tension={0.7}
+            />
+        };
 
         return (
             <Stage width={width}
@@ -247,7 +138,48 @@ class AlphabetGuidedCanvas extends React.Component {
                    onTouchMove={this.handleStageMouseMove}
             >
                 <Layer>
-                    {layerObjects}
+                    {curves.slice(0, gameState.currentCurveIdx).map((curve, index) => {return createCurve(curve, index)})}
+
+                    {createCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1))}
+
+                    {(startPoint !== nextPoint) &&
+                    <Circle
+                        ref={node => {
+                            this.currentCircle = node;
+                        }}
+                        x={startPoint.x}
+                        y={startPoint.y}
+                        radius={proximityDelta}
+                        fill="green"
+                        stroke={'black'}
+                        strokeWidth={strokeWidth}
+                    />
+                    }
+
+                    {(startPoint !== nextPoint) &&
+                    <Circle
+                        ref={node => {
+                            this.nextCircle = node;
+                        }}
+                        x={nextPoint.x}
+                        y={nextPoint.y}
+                        radius={proximityDelta}
+                        fill="red"
+                        stroke={'black'}
+                        strokeWidth={strokeWidth}
+                    />
+                    }
+
+                    {lineStart && lineEnd &&
+                    <Line
+                        points={[lineStart.x, lineStart.y, lineEnd.x, lineEnd.y]}
+                        stroke='red'
+                        strokeWidth={strokeWidth}
+                        lineCap='round'
+                        lineJoin='round'
+                        tension={0.7}
+                    />
+                    }
                 </Layer>
             </Stage>
         );
