@@ -1,4 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import {flattenCurve, scaleCurveCoOrdinates} from "./AlphabetUtils";
+import {CurveShape} from "./Shapes";
+
 import {Stage, Layer, Line} from 'react-konva';
 
 class AlphabetCursive extends React.Component {
@@ -11,52 +15,43 @@ class AlphabetCursive extends React.Component {
         const scaleX = stageWidth / origWidth;
         const scaleY = stageHeight / origHeight;
 
-        const curves = [];
-        origCurves.forEach(function (curve) {
-            const flattened = [];
-            curve.forEach(function (p) {
-                flattened.push(p.x * scaleX);
-                flattened.push(p.y * scaleY);
-            });
-            curves.push(flattened);
-        });
-
         this.state = {
-            curves: curves,
+            curves: origCurves.map(curve => flattenCurve(scaleCurveCoOrdinates(curve, {x: scaleX, y: scaleY}))),
             height: stageHeight,
             width: stageWidth,
             strokeWidth: stageWidth / 50
         };
-
-        console.log("orig props");
-        console.log(props);
-        console.log("set state done");
-        console.log(this.state);
     }
 
     render() {
         const {curves, height, width, strokeWidth} = this.state;
 
-        const layerObjects = [];
-        curves.forEach(curve => {
-            layerObjects.push(
-                <Line
-                    points={curve}
-                    stroke='red'
-                    strokeWidth={strokeWidth}
-                    lineCap='round'
-                    lineJoin='round'
-                    tension={0.7}
-                />)
-        });
         return (
             <Stage width={width} height={height}>
                 <Layer>
-                    {layerObjects}
+                    {
+                        curves.map((curve, idx) => {
+                            return <Line
+                                key={idx}
+                                points={curve}
+                                stroke='red'
+                                strokeWidth={strokeWidth}
+                                lineCap='round'
+                                lineJoin='round'
+                                tension={0.7}
+                            />
+                        })
+                    }
                 </Layer>
             </Stage>
         );
     }
 }
+
+AlphabetCursive.propTypes = {
+    origCurves: PropTypes.arrayOf(CurveShape),
+    origHeight: PropTypes.number,
+    origWidth: PropTypes.number
+};
 
 export default AlphabetCursive;

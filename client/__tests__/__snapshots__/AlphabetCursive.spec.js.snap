@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AlphabetCursive empty curves 1`] = `
+<Stage
+  height={400}
+  width={400}
+>
+  <Layer />
+</Stage>
+`;
+
+exports[`AlphabetCursive with curves 1`] = `
+<Stage
+  height={400}
+  width={400}
+>
+  <Layer>
+    <Line
+      key="0"
+      lineCap="round"
+      lineJoin="round"
+      points={
+        Array [
+          20,
+          20,
+          20,
+          40,
+        ]
+      }
+      stroke="red"
+      strokeWidth={8}
+      tension={0.7}
+    />
+    <Line
+      key="1"
+      lineCap="round"
+      lineJoin="round"
+      points={
+        Array [
+          40,
+          80,
+          40,
+          120,
+        ]
+      }
+      stroke="red"
+      strokeWidth={8}
+      tension={0.7}
+    />
+  </Layer>
+</Stage>
+`;

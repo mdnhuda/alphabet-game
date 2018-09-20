@@ -1,6 +1,6 @@
 import React from 'react';
 import VirtualButton from '../app/VirtualButton';
-import renderer from 'react-test-renderer';
+import {shallow} from 'enzyme';
 
 describe('VirtualButton', () => {
     const props = {
@@ -11,7 +11,7 @@ describe('VirtualButton', () => {
     };
 
     it('renders correctly', () => {
-        const tree = renderer.create(<VirtualButton {...props}/>).toJSON();
-        expect(tree).toMatchSnapshot();
+        const component = shallow(<VirtualButton {...props}/>);
+        expect(component).toMatchSnapshot();
     });
 });
