@@ -3,8 +3,13 @@ import AlphabetCursive from '../app/AlphabetCursive';
 import {shallow} from 'enzyme';
 
 describe('AlphabetCursive', () => {
-    it('empty curves', () => {
-        expect(shallow(<AlphabetCursive origCurves={[]} origWidth={300} origHeight={300}/>)).toMatchSnapshot();
+    beforeEach(() => {
+        window = {
+            ...window,
+            innerHeight: 400,
+            addEventListener: () => {},
+            removeEventListener: () => {}
+        }
     });
 
     it('with curves', () => {
@@ -15,6 +20,12 @@ describe('AlphabetCursive', () => {
                 origHeight={200}
             />
         );
+        const instance = component.instance;
+        instance.refs = {
+            container: {
+                offsetWidth: 500
+            }
+        };
         expect(component).toMatchSnapshot();
     });
 });

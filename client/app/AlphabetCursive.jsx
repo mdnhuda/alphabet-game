@@ -9,41 +9,56 @@ class AlphabetCursive extends React.Component {
     constructor(props) {
         super(props);
 
-        const {origCurves, origHeight, origWidth} = props;
-        const stageWidth = 400;
-        const stageHeight = 400;
-        const scaleX = stageWidth / origWidth;
-        const scaleY = stageHeight / origHeight;
-
         this.state = {
-            curves: origCurves.map(curve => flattenCurve(scaleCurveCoOrdinates(curve, {x: scaleX, y: scaleY}))),
-            height: stageHeight,
-            width: stageWidth,
-            strokeWidth: stageWidth / 50
+            ...props,
+            stageWidth: props.origWidth
         };
     }
 
-    render() {
-        const {curves, height, width, strokeWidth} = this.state;
+    componentDidMount() {
+        this.checkSize();
+        // here we should add listener for "container" resize
+        // take a look here https://developers.google.com/web/updates/2016/10/resizeobserver
+        // for simplicity I will just listen window resize
+        window.addEventListener("resize", this.checkSize);
+    }
 
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.checkSize);
+    }
+
+    checkSize = () => {
+        const width = this.container ? this.container.offsetWidth : this.state.origWidth;
+        this.setState({
+            stageWidth: width
+        });
+    };
+
+    render() {
+        const {origCurves, origWidth, origHeight, stageWidth} = this.state;
+        const strokeWidth = stageWidth / 50;
+        const scale = stageWidth / origWidth;
+        const scaledCurves = origCurves.map(curve => flattenCurve(scaleCurveCoOrdinates(curve, {x: scale, y: 1})));
         return (
-            <Stage width={width} height={height}>
-                <Layer>
-                    {
-                        curves.map((curve, idx) => {
-                            return <Line
-                                key={idx}
-                                points={curve}
-                                stroke='red'
-                                strokeWidth={strokeWidth}
-                                lineCap='round'
-                                lineJoin='round'
-                                tension={0.7}
-                            />
-                        })
-                    }
-                </Layer>
-            </Stage>
+            <div style={{width: "100%", border: "1px solid grey"}} ref={node => {this.container = node;}}>
+                <Stage width={stageWidth} height={origHeight}>
+                    <Layer>
+                        {
+                            scaledCurves.map((curve, idx) => {
+                                return <Line
+                                    key={idx}
+                                    points={curve}
+                                    stroke='red'
+                                    strokeWidth={strokeWidth}
+                                    lineCap='round'
+                                    lineJoin='round'
+                                    tension={0.7}
+                                />
+                            })
+                        }
+                    </Layer>
+                </Stage>
+            </div>
         );
     }
 }
