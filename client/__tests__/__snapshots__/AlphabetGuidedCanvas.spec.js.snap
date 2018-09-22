@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AlphabetGuidedCanvas state transitions 1`] = `
+<Stage
+  height={400}
+  onMouseDown={[Function]}
+  onMouseMove={[Function]}
+  onMouseUp={[Function]}
+  onTouchEnd={[Function]}
+  onTouchMove={[Function]}
+  onTouchStart={[Function]}
+  width={400}
+>
+  <Layer>
+    <Line
+      lineCap="round"
+      lineJoin="round"
+      points={
+        Array [
+          10,
+          10,
+        ]
+      }
+      stroke="red"
+      strokeWidth={8}
+      tension={0.7}
+    />
+    <Circle
+      fill="green"
+      radius={16}
+      stroke="black"
+      strokeWidth={8}
+      x={10}
+      y={10}
+    />
+    <Circle
+      fill="red"
+      radius={16}
+      stroke="black"
+      strokeWidth={8}
+      x={10}
+      y={100}
+    />
+  </Layer>
+</Stage>
+`;

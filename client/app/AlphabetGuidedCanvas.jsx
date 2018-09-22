@@ -33,19 +33,10 @@ class AlphabetGuidedCanvas extends React.Component {
         console.log("on mouse down");
         console.log(`lineStart=${lineStart}, nextPoint=${nextPoint}, pos=${pos}`);
 
-        if (!lineStart) {
-            // start point not selected yet; check if mouse is near start point
-            if (isCloseProximity(pos, startPoint, proximityDelta)) {
-                // mark start point selected
-                this.setState({lineStart: pos});
-            }
-        } else {
-            if (isCloseProximity(pos, nextPoint, proximityDelta)) {
-                const newGameState = calculateNextState(curves, gameState);
-                this.setState({gameState: newGameState});
-            } else {
-                this.setState({lineStart: null});
-            }
+        // start point not selected yet; check if mouse is near start point
+        if (isCloseProximity(pos, startPoint, proximityDelta)) {
+            // mark start point selected
+            this.setState({lineStart: pos});
         }
         this.animateStartEnd();
     };
