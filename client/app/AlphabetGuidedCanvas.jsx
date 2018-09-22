@@ -1,26 +1,50 @@
 import React from 'react';
-import {initialGameState, calculateNextState, scaleCurvesCoOrdinates, isCloseProximity, flattenCurve} from "./AlphabetUtils";
+import {initialGameState, calculateNextState,scaleCurveCoOrdinates, isCloseProximity, flattenCurve} from "./AlphabetUtils";
 import {Stage, Layer, Line, Circle} from 'react-konva';
 
 class AlphabetGuidedCanvas extends React.Component {
     constructor(props) {
         super(props);
 
-        const {origCurves, origHeight, origWidth} = props;
-        const stageWidth = 400;
-        const stageHeight = 400;
-
         this.state = {
-            curves: scaleCurvesCoOrdinates( origCurves, {x: stageWidth / origWidth, y: stageHeight / origHeight}),
+            ...props,
+            curves: props.origCurves,
+            stageWidth: props.origWidth,
+            stageHeight: props.origHeight,
             gameState: initialGameState(),
-            height: stageHeight,
-            width: stageWidth,
-            strokeWidth: stageWidth / 50,
-            proximityDelta: stageWidth / 25,
+            proximityDelta: props.origWidth / 25,
             lineStart: null,
             lineEnd: null
         };
     }
+
+    componentDidMount() {
+        this.checkSize();
+        // here we should add listener for "container" resize
+        // take a look here https://developers.google.com/web/updates/2016/10/resizeobserver
+        // for simplicity I will just listen window resize
+        window.addEventListener("resize", this.checkSize);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.checkSize);
+    }
+
+    checkSize = () => {
+        const {origCurves, origWidth, origHeight} = this.state;
+        const width = this.container ? this.container.offsetWidth : origWidth;
+        const scaleX = width / origWidth;
+
+        this.setState({
+            curves: origCurves.map(curve => scaleCurveCoOrdinates(curve, {x: scaleX, y: 1})),
+            stageWidth: width,
+            stageHeight: origHeight,
+            gameState: initialGameState(),
+            proximityDelta: width / 25,
+            lineStart: null,
+            lineEnd: null
+        });
+    };
 
     handleStageMouseDown = e => {
         const {curves, gameState, proximityDelta, lineStart} = this.state;
@@ -102,7 +126,10 @@ class AlphabetGuidedCanvas extends React.Component {
     }
 
     render() {
-        const {curves, gameState, height, width, strokeWidth, proximityDelta, lineStart, lineEnd} = this.state;
+        const {curves, stageWidth, stageHeight, gameState, proximityDelta, lineStart, lineEnd} = this.state;
+        const strokeWidth = stageWidth / 50;
+
+        // const {curves, gameState, height, width, strokeWidth, proximityDelta, lineStart, lineEnd} = this.state;
         let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
         let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
@@ -119,60 +146,61 @@ class AlphabetGuidedCanvas extends React.Component {
         };
 
         return (
-            <Stage width={width}
-                   height={height}
-                   onMouseDown={this.handleStageMouseDown}
-                   onTouchStart={this.handleStageMouseDown}
-                   onMouseUp={this.handleStageMouseUp}
-                   onTouchEnd={this.handleStageMouseUp}
-                   onMouseMove={this.handleStageMouseMove}
-                   onTouchMove={this.handleStageMouseMove}
-            >
-                <Layer>
-                    {curves.slice(0, gameState.currentCurveIdx).map((curve, index) => {return createCurve(curve, index)})}
+            <div style={{width: "100%", border: "1px solid grey"}} ref={node => {this.container = node;}}>
+                <Stage width={stageWidth} height={stageHeight}
+                       onMouseDown={this.handleStageMouseDown}
+                       onTouchStart={this.handleStageMouseDown}
+                       onMouseUp={this.handleStageMouseUp}
+                       onTouchEnd={this.handleStageMouseUp}
+                       onMouseMove={this.handleStageMouseMove}
+                       onTouchMove={this.handleStageMouseMove}
+                >
+                    <Layer>
+                        {curves.slice(0, gameState.currentCurveIdx).map((curve, index) => {return createCurve(curve, index)})}
 
-                    {createCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1))}
+                        {createCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1))}
 
-                    {(startPoint !== nextPoint) &&
-                    <Circle
-                        ref={node => {
-                            this.currentCircle = node;
-                        }}
-                        x={startPoint.x}
-                        y={startPoint.y}
-                        radius={proximityDelta}
-                        fill="green"
-                        stroke={'black'}
-                        strokeWidth={strokeWidth}
-                    />
-                    }
+                        {(startPoint !== nextPoint) &&
+                        <Circle
+                            ref={node => {
+                                this.currentCircle = node;
+                            }}
+                            x={startPoint.x}
+                            y={startPoint.y}
+                            radius={proximityDelta}
+                            fill="green"
+                            stroke={'black'}
+                            strokeWidth={strokeWidth}
+                        />
+                        }
 
-                    {(startPoint !== nextPoint) &&
-                    <Circle
-                        ref={node => {
-                            this.nextCircle = node;
-                        }}
-                        x={nextPoint.x}
-                        y={nextPoint.y}
-                        radius={proximityDelta}
-                        fill="red"
-                        stroke={'black'}
-                        strokeWidth={strokeWidth}
-                    />
-                    }
+                        {(startPoint !== nextPoint) &&
+                        <Circle
+                            ref={node => {
+                                this.nextCircle = node;
+                            }}
+                            x={nextPoint.x}
+                            y={nextPoint.y}
+                            radius={proximityDelta}
+                            fill="red"
+                            stroke={'black'}
+                            strokeWidth={strokeWidth}
+                        />
+                        }
 
-                    {lineStart && lineEnd &&
-                    <Line
-                        points={[lineStart.x, lineStart.y, lineEnd.x, lineEnd.y]}
-                        stroke='red'
-                        strokeWidth={strokeWidth}
-                        lineCap='round'
-                        lineJoin='round'
-                        tension={0.7}
-                    />
-                    }
-                </Layer>
-            </Stage>
+                        {lineStart && lineEnd &&
+                        <Line
+                            points={[lineStart.x, lineStart.y, lineEnd.x, lineEnd.y]}
+                            stroke='red'
+                            strokeWidth={strokeWidth}
+                            lineCap='round'
+                            lineJoin='round'
+                            tension={0.7}
+                        />
+                        }
+                    </Layer>
+                </Stage>
+            </div>
         );
     }
 }
