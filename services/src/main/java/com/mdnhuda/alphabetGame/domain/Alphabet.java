@@ -1,16 +1,15 @@
 package com.mdnhuda.alphabetGame.domain;
 
-import java.util.List;
-
 /**
  * @author mdnhuda@gmail.com
  * @since 3/09/2018
  */
 public class Alphabet {
+    private int id;
     private String label;
     private String value;
     private String image;
-    private List<List<Point>> cursive;
+    private CursiveData cursive;
     private String audio;
     private String audioType;
 
@@ -29,7 +28,7 @@ public class Alphabet {
         return image;
     }
 
-    public List<List<Point>> getCursive() {
+    private CursiveData getCursive() {
         return cursive;
     }
 
@@ -59,7 +58,7 @@ public class Alphabet {
             return this;
         }
 
-        public AlphabetBuilder cursive(List<List<Point>> cursive) {
+        public AlphabetBuilder cursive(CursiveData cursive) {
             alphabet.cursive = cursive;
             return this;
         }

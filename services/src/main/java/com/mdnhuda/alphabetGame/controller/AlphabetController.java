@@ -1,15 +1,12 @@
 package com.mdnhuda.alphabetGame.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import com.mdnhuda.alphabetGame.domain.Alphabet;
 import com.mdnhuda.alphabetGame.domain.KeyboardEntry;
-import com.mdnhuda.alphabetGame.domain.Language;
+import com.mdnhuda.alphabetGame.domain.AlphabetType;
 import com.mdnhuda.alphabetGame.service.AlphabetService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +17,12 @@ public class AlphabetController {
     private AlphabetService alphabetService;
 
     @RequestMapping(value = "/next", method = RequestMethod.GET)
-    public Alphabet getNextAlphabet(@RequestParam Language language) {
-        return alphabetService.getNext(language);
+    public Alphabet getNextAlphabet(@RequestParam AlphabetType alphabetType) {
+        return alphabetService.getNext(alphabetType);
     }
 
     @RequestMapping(value = "/keyboard", method = RequestMethod.GET)
-    public List<KeyboardEntry> getKeyboard(@RequestParam Language language) {
-        return alphabetService.getKeyboard(language);
+    public List<KeyboardEntry> getKeyboard(@RequestParam AlphabetType alphabetType) {
+        return alphabetService.getKeyboard(alphabetType);
     }
 }
