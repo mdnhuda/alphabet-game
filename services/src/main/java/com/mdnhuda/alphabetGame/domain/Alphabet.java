@@ -7,74 +7,56 @@ package com.mdnhuda.alphabetGame.domain;
 public class Alphabet {
     private int id;
     private String label;
-    private String value;
     private String image;
     private CursiveData cursive;
     private String audio;
     private String audioType;
 
-    private Alphabet() {
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getLabel() {
         return label;
     }
 
-    public String getValue() {
-        return value;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getImage() {
         return image;
     }
 
-    private CursiveData getCursive() {
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public CursiveData getCursive() {
         return cursive;
+    }
+
+    public void setCursive(CursiveData cursive) {
+        this.cursive = cursive;
     }
 
     public String getAudio() {
         return audio;
     }
 
+    public void setAudio(String audio) {
+        this.audio = audio;
+    }
+
     public String getAudioType() {
         return audioType;
     }
 
-    public static final class AlphabetBuilder {
-        private Alphabet alphabet = new Alphabet();
-
-        public AlphabetBuilder label(String label) {
-            alphabet.label = label;
-            return this;
-        }
-
-        public AlphabetBuilder value(String value) {
-            alphabet.value = value;
-            return this;
-        }
-
-        public AlphabetBuilder image(String image) {
-            alphabet.image = image;
-            return this;
-        }
-
-        public AlphabetBuilder cursive(CursiveData cursive) {
-            alphabet.cursive = cursive;
-            return this;
-        }
-
-        public AlphabetBuilder audio(String audio) {
-            alphabet.audio = audio;
-            return this;
-        }
-
-        public AlphabetBuilder audioType(String audioType) {
-            alphabet.audioType = audioType;
-            return this;
-        }
-
-        public Alphabet build() {
-            return alphabet;
-        }
+    public void setAudioType(String audioType) {
+        this.audioType = audioType;
     }
 }

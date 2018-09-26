@@ -7,16 +7,16 @@ import java.util.List;
  * @since 3/09/2018
  */
 public class KeyboardEntry {
-    private String value;
+    private int id;
     private String label;
 
-    public KeyboardEntry(String value, String label) {
-        this.value = value;
+    public KeyboardEntry(int id, String label) {
+        this.id = id;
         this.label = label;
     }
 
-    public String getValue() {
-        return value;
+    public int getId() {
+        return id;
     }
 
     public String getLabel() {

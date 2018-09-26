@@ -8,12 +8,12 @@ import java.util.List;
 public class CursiveData {
     private int height;
     private int width;
-    private List<Point> points;
+    private List<List<Point>> points;
 
     @JsonCreator
     public CursiveData(@JsonProperty("height") int height,
-                       @JsonProperty("height") int width,
-                       @JsonProperty("points") List<Point> points) {
+                       @JsonProperty("width") int width,
+                       @JsonProperty("points") List<List<Point>> points) {
         this.height = height;
         this.width = width;
         this.points = points;
@@ -27,7 +27,7 @@ public class CursiveData {
         return width;
     }
 
-    public List<Point> getPoints() {
+    public List<List<Point>> getPoints() {
         return points;
     }
 }

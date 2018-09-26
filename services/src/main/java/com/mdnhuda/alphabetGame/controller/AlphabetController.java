@@ -16,13 +16,13 @@ public class AlphabetController {
     @Autowired
     private AlphabetService alphabetService;
 
-    @RequestMapping(value = "/next", method = RequestMethod.GET)
-    public Alphabet getNextAlphabet(@RequestParam AlphabetType alphabetType) {
-        return alphabetService.getNext(alphabetType);
+    @RequestMapping(value = "/alphabet", method = RequestMethod.GET)
+    public Alphabet getAlphabet(@RequestParam AlphabetType type, @RequestParam int id) {
+        return alphabetService.getAlphabet(type, id);
     }
 
     @RequestMapping(value = "/keyboard", method = RequestMethod.GET)
-    public List<KeyboardEntry> getKeyboard(@RequestParam AlphabetType alphabetType) {
-        return alphabetService.getKeyboard(alphabetType);
+    public List<KeyboardEntry> getKeyboard(@RequestParam AlphabetType type) {
+        return alphabetService.getKeyboard(type);
     }
 }

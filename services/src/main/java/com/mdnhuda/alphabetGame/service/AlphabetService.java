@@ -34,23 +34,23 @@ public class AlphabetService {
         TypeReference<List<Alphabet>> alphabetListType = new TypeReference<List<Alphabet>>() {
         };
 
-        map.put(AlphabetType.EN_UPPER, MAPPER.readValue(ResourceUtils.getFile("classpath:/english_upper.json"), alphabetListType));
+        map.put(AlphabetType.EN_UPPER, MAPPER.readValue(ResourceUtils.getFile("classpath:english_upper.json"), alphabetListType));
 
-        map.put(AlphabetType.BN, MAPPER.readValue(ResourceUtils.getFile("classpath:/bangla.json"), alphabetListType));
+        map.put(AlphabetType.BN, MAPPER.readValue(ResourceUtils.getFile("classpath:bangla.json"), alphabetListType));
 
         this.alphabetMap = map;
 
         Map<AlphabetType, List<KeyboardEntry>> keyboardMap = new HashMap<>();
         this.alphabetMap.forEach((type, list) -> {
             keyboardMap.put(type,
-                    list.stream().map(alphabet -> new KeyboardEntry(alphabet.getValue(), alphabet.getLabel()))
+                    list.stream().map(alphabet -> new KeyboardEntry(alphabet.getId(), alphabet.getLabel()))
                             .collect(Collectors.toList()));
         });
         this.keyboardMap = keyboardMap;
     }
 
-    public Alphabet getNext(AlphabetType alphabetType, int index) {
-        return alphabetMap.get(alphabetType).get(index);
+    public Alphabet getAlphabet(AlphabetType alphabetType, int id) {
+        return alphabetMap.get(alphabetType).stream().filter(alphabet -> alphabet.getId() == id).findFirst().get();
     }
 
     public List<KeyboardEntry> getKeyboard(AlphabetType alphabetType) {
