@@ -1,13 +1,17 @@
 package com.mdnhuda.alphabetGame.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * @author mdnhuda@gmail.com
  * @since 3/09/2018
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Alphabet {
     private int id;
     private String label;
-    private String image;
+    private ImageData image;
     private CursiveData cursive;
     private String audio;
     private String audioType;
@@ -28,11 +32,11 @@ public class Alphabet {
         this.label = label;
     }
 
-    public String getImage() {
+    public ImageData getImage() {
         return image;
     }
 
-    public void setImage(String image) {
+    public void setImage(ImageData image) {
         this.image = image;
     }
 
