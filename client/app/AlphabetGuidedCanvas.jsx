@@ -1,6 +1,9 @@
 import React from 'react';
-import {initialGameState, calculateNextState,scaleCurveCoOrdinates, isCloseProximity, flattenCurve} from "./AlphabetUtils";
+import PropTypes from 'prop-types';
+import {calculateNextState, flattenCurve, initialGameState, isCloseProximity, scaleCurveCoOrdinates} from "./AlphabetUtils";
 import {Stage, Layer, Line, Circle} from 'react-konva';
+import LineOrQuadraticCurve from './LineOrQuadraticCurve';
+import {CurveShape} from "./ReactPropTypeShapes";
 
 class AlphabetGuidedCanvas extends React.Component {
     constructor(props) {
@@ -47,15 +50,11 @@ class AlphabetGuidedCanvas extends React.Component {
     };
 
     handleStageMouseDown = e => {
-        const {curves, gameState, proximityDelta, lineStart} = this.state;
+        const {curves, gameState, proximityDelta} = this.state;
         const stage = e.target.getStage();
 
         let pos = stage.getPointerPosition();
         let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
-        let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
-
-        console.log("on mouse down");
-        console.log(`lineStart=${lineStart}, nextPoint=${nextPoint}, pos=${pos}`);
 
         // start point not selected yet; check if mouse is near start point
         if (isCloseProximity(pos, startPoint, proximityDelta)) {
@@ -71,14 +70,10 @@ class AlphabetGuidedCanvas extends React.Component {
         let pos = stage.getPointerPosition();
         let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
 
-        console.log("on mouse up");
-        console.log(`lineStart=${lineStart}, nextPoint=${nextPoint}, pos=${pos}`);
-
         let newGameState = gameState;
 
         // start-point already selected and checking if mouse was up on end-point
         if (lineStart && isCloseProximity(pos, nextPoint, proximityDelta)) {
-            console.log("getting new state");
             newGameState = calculateNextState(curves, gameState);
         }
         this.setState({gameState: newGameState, lineStart: null, lineEnd: null});
@@ -128,22 +123,8 @@ class AlphabetGuidedCanvas extends React.Component {
     render() {
         const {curves, stageWidth, stageHeight, gameState, proximityDelta, lineStart, lineEnd} = this.state;
         const strokeWidth = stageWidth / 50;
-
-        // const {curves, gameState, height, width, strokeWidth, proximityDelta, lineStart, lineEnd} = this.state;
         let startPoint = curves[gameState.currentCurveIdx][gameState.currentPointIdx];
         let nextPoint = curves[gameState.nextCurveIdx][gameState.nextPointIdx];
-
-        const createCurve = (curve, idx) => {
-            return <Line
-                key={idx}
-                points={flattenCurve(curve)}
-                stroke='red'
-                strokeWidth={strokeWidth}
-                lineCap='round'
-                lineJoin='round'
-                tension={0.7}
-            />
-        };
 
         return (
             <div style={{width: "100%", border: "1px solid grey"}} ref={node => {this.container = node;}}>
@@ -156,9 +137,20 @@ class AlphabetGuidedCanvas extends React.Component {
                        onTouchMove={this.handleStageMouseMove}
                 >
                     <Layer>
-                        {curves.slice(0, gameState.currentCurveIdx).map((curve, index) => {return createCurve(curve, index)})}
+                        {curves.slice(0, gameState.currentCurveIdx).map((curve, index) => {
+                            return <LineOrQuadraticCurve key={index} points={curve} stroke={'red'} strokeWidth={strokeWidth} />
+                        })
+                        }
 
-                        {createCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1))}
+                        {/*not sure why the Curve component does not work here*/}
+                        <Line
+                            points={flattenCurve(curves[gameState.currentCurveIdx].slice(0, gameState.currentPointIdx + 1))}
+                            stroke='red'
+                            strokeWidth={strokeWidth}
+                            lineCap='round'
+                            lineJoin='round'
+                            tension={0.7}
+                        />
 
                         {(startPoint !== nextPoint) &&
                         <Circle
@@ -204,5 +196,11 @@ class AlphabetGuidedCanvas extends React.Component {
         );
     }
 }
+
+AlphabetGuidedCanvas.propTypes = {
+    origCurves: PropTypes.arrayOf(CurveShape),
+    origHeight: PropTypes.number,
+    origWidth: PropTypes.number
+};
 
 export default AlphabetGuidedCanvas;

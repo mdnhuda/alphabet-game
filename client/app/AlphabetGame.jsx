@@ -1,6 +1,5 @@
 import React from 'react';
 import axios from 'axios';
-import PropTypes from 'prop-types';
 import AlphabetCursive from './AlphabetCursive';
 import Button from './VirtualButton';
 import SampleData from './SampleData';

@@ -1,5 +1,82 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`AlphabetGuidedCanvas render intermediate state 1`] = `
+<div
+  style={
+    Object {
+      "border": "1px solid grey",
+      "width": "100%",
+    }
+  }
+>
+  <Stage
+    height={400}
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+    onTouchEnd={[Function]}
+    onTouchMove={[Function]}
+    onTouchStart={[Function]}
+    width={400}
+  >
+    <Layer>
+      <LineOrQuadraticCurve
+        key="0"
+        points={
+          Array [
+            Object {
+              "x": 10,
+              "y": 10,
+            },
+            Object {
+              "x": 10,
+              "y": 100,
+            },
+            Object {
+              "x": 50,
+              "y": 50,
+            },
+          ]
+        }
+        stroke="red"
+        strokeWidth={8}
+      />
+      <Line
+        lineCap="round"
+        lineJoin="round"
+        points={
+          Array [
+            20,
+            40,
+            20,
+            60,
+          ]
+        }
+        stroke="red"
+        strokeWidth={8}
+        tension={0.7}
+      />
+      <Circle
+        fill="green"
+        radius={16}
+        stroke="black"
+        strokeWidth={8}
+        x={20}
+        y={60}
+      />
+      <Circle
+        fill="red"
+        radius={16}
+        stroke="black"
+        strokeWidth={8}
+        x={20}
+        y={80}
+      />
+    </Layer>
+  </Stage>
+</div>
+`;
+
 exports[`AlphabetGuidedCanvas state transitions 1`] = `
 <div
   style={

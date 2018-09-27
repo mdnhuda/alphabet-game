@@ -20,6 +20,26 @@ describe('AlphabetGuidedCanvas', () => {
         }
     });
 
+    it('render intermediate state', () => {
+        const curvesData = {
+            origCurves: [[{"x": 10, "y": 10}, {"x": 10, "y": 100}, {"x": 50, "y": 50}], [{"x": 20, "y": 40}, {"x": 20, "y": 60}, {"x": 20, "y": 80}]],
+            origWidth: 400,
+            origHeight: 400
+        };
+        const component = shallow(<AlphabetGuidedCanvas {...curvesData} />);
+        component.setState({
+            gameState: {
+                currentCurveIdx: 1,
+                currentPointIdx: 1,
+                nextCurveIdx: 1,
+                nextPointIdx: 2
+            }
+        });
+
+        component.update();
+        expect(component).toMatchSnapshot();
+    });
+
     it('state transitions', () => {
         const point0 = curvesData.origCurves[0][0];
         const arbitraryPoint = {"x": 10, "y": 50};
