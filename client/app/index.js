@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import AlphabetGame from './AlphabetGame';
+import MaterialDesignPage from "./MaterialDesignPage";
 
 ReactDOM.render(
-    <AlphabetGame />, document.getElementById('app')
+    <MaterialDesignPage />, document.getElementById('app')
 );

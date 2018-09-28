@@ -14,7 +14,6 @@ class LineOrQuadraticCurve extends React.Component {
 
     render () {
         const {points, stroke, strokeWidth} = this.state;
-        console.log("after");
         console.log(points);
         return (
             points && points.length >= 2 &&

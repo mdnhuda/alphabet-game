@@ -1,9 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {flattenCurve, scaleCurveCoOrdinates} from "./AlphabetUtils";
-import LineOrQuadraticCurve from './LineOrQuadraticCurve';
-import {Shape} from 'react-konva';
-
 import {CurveShape} from "./ReactPropTypeShapes";
 
 import {Stage, Layer, Line} from 'react-konva';
@@ -20,7 +17,6 @@ class AlphabetCursive extends React.Component {
     }
 
     componentDidMount() {
-        console.log("in componentDidMount");
         this.checkSize();
         // here we should add listener for "container" resize
         // take a look here https://developers.google.com/web/updates/2016/10/resizeobserver
@@ -29,34 +25,35 @@ class AlphabetCursive extends React.Component {
     }
 
     componentWillUnmount() {
-        console.log("in componentWillUnmount");
         window.removeEventListener("resize", this.checkSize);
     }
 
     checkSize = () => {
         const width = this.container ? this.container.offsetWidth : this.state.origWidth;
         this.setState({
-            stageWidth: width
+            stageWidth: width,
         });
     };
 
     render() {
-        console.log("in render");
         const {origCurves, origWidth, origHeight, stageWidth} = this.state;
         const strokeWidth = stageWidth / 50;
         const scale = stageWidth / origWidth;
-        const scaledCurves = origCurves.map(curve => scaleCurveCoOrdinates(curve, {x: scale, y: 1}));
+
+        const scaledCurves = origCurves.map(curve => scaleCurveCoOrdinates(curve, {x: scale, y: scale}));
         return (
-            <div style={{width: "100%", border: "1px solid grey"}} ref={node => {this.container = node;}}>
+            <div style={{width: "100%"}} ref={node => {this.container = node;}}>
                 <Stage width={stageWidth} height={origHeight}>
                     <Layer>
                         {
                             scaledCurves.map((curve, idx) => {
-                                return <LineOrQuadraticCurve
-                                    key={idx}
-                                    points={curve}
+                                return <Line
+                                    points={flattenCurve(curve)}
                                     stroke='red'
                                     strokeWidth={strokeWidth}
+                                    lineCap='round'
+                                    lineJoin='round'
+                                    tension={0.7}
                                 />
                             })
                         }

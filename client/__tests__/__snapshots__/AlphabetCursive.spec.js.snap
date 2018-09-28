@@ -4,7 +4,6 @@ exports[`AlphabetCursive with curves 1`] = `
 <div
   style={
     Object {
-      "border": "1px solid grey",
       "width": "100%",
     }
   }
@@ -14,43 +13,37 @@ exports[`AlphabetCursive with curves 1`] = `
     width={200}
   >
     <Layer>
-      <LineOrQuadraticCurve
-        key="0"
+      <Line
+        lineCap="round"
+        lineJoin="round"
         points={
           Array [
-            Object {
-              "x": 10,
-              "y": 10,
-            },
-            Object {
-              "x": 10,
-              "y": 20,
-            },
-            Object {
-              "x": 15,
-              "y": 15,
-            },
+            10,
+            10,
+            10,
+            20,
+            15,
+            15,
           ]
         }
         stroke="red"
         strokeWidth={4}
+        tension={0.7}
       />
-      <LineOrQuadraticCurve
-        key="1"
+      <Line
+        lineCap="round"
+        lineJoin="round"
         points={
           Array [
-            Object {
-              "x": 20,
-              "y": 40,
-            },
-            Object {
-              "x": 20,
-              "y": 60,
-            },
+            20,
+            40,
+            20,
+            60,
           ]
         }
         stroke="red"
         strokeWidth={4}
+        tension={0.7}
       />
     </Layer>
   </Stage>
