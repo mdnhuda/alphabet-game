@@ -10,10 +10,29 @@ const SampleData = {
     //keyboard: [{value: "a", label: "A"}, {value: "b", label: "B"}, {value: "c", label: "C"}],
     title: "The Alphabet Game",
     settings: {
-        language: "EN",
+        language: "BN",
         audioAutoPlay: false,
         audioLoop: false
-    }
+    },
+    alphabets: [
+        {
+            "id": "101",
+            "label": "ক",
+            "audioUrl": "/sounds/ka.ogg",
+            "words": [
+                {"text": "কলা", "imageUrl": "/images/banana.jpg", "audioUrl": "/sounds/kola.ogg"},
+                {"text": " কলম", "imageUrl": "/images/pen.jpg", "audioUrl": "/sounds/kolom.ogg"}
+            ]
+        },
+        {
+            "id": "102",
+            "label": "খ",
+            "audioUrl": "/sounds/kha.ogg",
+            "words": [
+                {"text": "খরগোশ", "imageUrl": "/images/rabbit.jpg", "audioUrl": "/sounds/khorgosh.ogg"}
+            ]
+        }
+    ]
 };
 
 export default SampleData;

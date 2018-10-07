@@ -35,4 +35,10 @@ public class AlphabetServiceTest {
         Alphabet alphabet = service.getAlphabet(AlphabetType.EN_UPPER, 1);
         assertEquals("A", alphabet.getLabel());
     }
+
+    @Test
+    public void testGetBanglaAlphabet() {
+        Alphabet alphabet = service.getAlphabet(AlphabetType.BN, 101);
+        assertEquals("ক", alphabet.getLabel());
+    }
 }

@@ -1,12 +1,63 @@
 [
   {
-    "id": "1",
-    "label": "হ",
-    "cursive": {"width" : 400, "height" : 400, "points" : [[{"x":52,"y":60},{"x":230,"y":58}],[{"x":85,"y":90},{"x":118,"y":96},{"x":128,"y":119},{"x":110,"y":142},{"x":83,"y":137},{"x":72,"y":111},{"x":107,"y":71},{"x":155,"y":72},{"x":187,"y":108},{"x":189,"y":145},{"x":167,"y":178},{"x":128,"y":192},{"x":80,"y":189}],[{"x":82,"y":192},{"x":225,"y":271}]]}
+    "id": "101",
+    "label": "ক",
+    "audioUrl": "/sounds/ka.ogg",
+    "words": [
+      {"text": "কলা", "imageUrl": "/images/banana.jpg", "audioUrl": "/sounds/kola.ogg"},
+      {"text": " কলম", "imageUrl": "/images/pen.jpg", "audioUrl": "/sounds/kolom.ogg"}
+    ]
   },
   {
-    "id": "2",
+    "id": "102",
+    "label": "খ",
+    "audioUrl": "/sounds/kha.ogg",
+    "words": [
+      {"text": "খরগোশ", "imageUrl": "/images/rabbit.jpg", "audioUrl": "/sounds/khorgosh.ogg"}
+    ]
+  },
+  {
+    "id": "103",
+    "label": "গ",
+    "audioUrl": "/sounds/ga.ogg",
+    "words": [
+      {"text": "গরু", "imageUrl": "/images/cow.jpg", "audioUrl": "/sounds/goru.ogg"},
+      {"text": "গাড়ি", "imageUrl": "/images/car.jpg", "audioUrl": "/sounds/gari.ogg"}
+    ]
+  },
+  {
+    "id": "104",
+    "label": "ঘ",
+    "audioUrl": "/sounds/gha.ogg",
+    "words": [
+      {"text": "ঘোড়া", "imageUrl": "/images/horse.jpg", "audioUrl": "/sounds/ghora.ogg"},
+      {"text": "ঘড়ি", "imageUrl": "/images/clock.jpg", "audioUrl": "/sounds/ghori.ogg"}
+    ]
+  },
+  {
+    "id": "105",
+    "label": "চ",
+    "audioUrl": "/sounds/cha.ogg",
+    "words": [
+      {"text": "চামচ", "imageUrl": "/images/spoon.jpg", "audioUrl": "/sounds/chamoch.ogg"},
+      {"text": "চোখ", "imageUrl": "/images/eye.jpg", "audioUrl": "/sounds/chokh.ogg"}
+    ]
+  },
+  {
+    "id": "106",
+    "label": "ছ",
+    "audioUrl": "/sounds/chha.ogg",
+    "words": [
+      {"text": "ছাগল", "imageUrl": "/images/goat.jpg", "audioUrl": "/sounds/chagol.ogg"}
+    ]
+  },
+  {
+    "id": "107",
     "label": "জ",
+    "audioUrl": "/sounds/borgio_ja.ogg",
+    "words": [
+      {"text": "জুতা", "imageUrl": "/images/footware.jpg", "audioUrl": "/sounds/juta.ogg"}
+    ],
     "cursive": {"width" : 400, "height" : 400, "points" : [[{"x":60,"y":90},{"x":362,"y":90}],[{"x":188,"y":93},{"x":150,"y":181},{"x":160,"y":220},{"x":220,"y":212},{"x":218,"y":273},{"x":170,"y":315},{"x":102,"y":282},{"x":81,"y":234},{"x":78,"y":175}],[{"x":189,"y":94},{"x":239,"y":150},{"x":308,"y":182},{"x":288,"y":263},{"x":309,"y":334}]]}
   }
 ]

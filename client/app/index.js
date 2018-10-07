@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import MaterialDesignPage from "./MaterialDesignPage";
+import AlphabetList from "./AlphabetList.jsx";
 
 ReactDOM.render(
-    <MaterialDesignPage />, document.getElementById('app')
+    <AlphabetList />, document.getElementById('app')
 );

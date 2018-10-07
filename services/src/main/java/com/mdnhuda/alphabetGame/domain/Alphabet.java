@@ -1,7 +1,8 @@
 package com.mdnhuda.alphabetGame.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
 
 /**
  * @author mdnhuda@gmail.com
@@ -12,8 +13,9 @@ public class Alphabet {
     private int id;
     private String label;
     private ImageData image;
+    private List<Word> words;
     private CursiveData cursive;
-    private String audio;
+    private String audioUrl;
     private String audioType;
 
     public int getId() {
@@ -40,6 +42,14 @@ public class Alphabet {
         this.image = image;
     }
 
+    public List<Word> getWords() {
+        return words;
+    }
+
+    public void setWords(List<Word> words) {
+        this.words = words;
+    }
+
     public CursiveData getCursive() {
         return cursive;
     }
@@ -48,12 +58,12 @@ public class Alphabet {
         this.cursive = cursive;
     }
 
-    public String getAudio() {
-        return audio;
+    public String getAudioUrl() {
+        return audioUrl;
     }
 
-    public void setAudio(String audio) {
-        this.audio = audio;
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 
     public String getAudioType() {
